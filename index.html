@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator ATP & Analisis CP - Kurikulum Nasional</title>
+    <title>Generator ATP & Analisis CP</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Teko:wght@700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
@@ -67,11 +67,12 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group.full-width { grid-column: 1 / -1; }
         label { margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); font-size: 14px; }
-        input[type="text"], input[type="password"], textarea {
+        input[type="text"], input[type="password"], textarea, input[type="radio"] {
             width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;
             font-size: 14px; box-sizing: border-box; background-color: var(--secondary-dark);
             color: var(--text-primary); transition: border-color 0.3s, box-shadow 0.3s;
         }
+        input[type="radio"] { width: auto; }
         input[type="text"]::placeholder, textarea::placeholder { color: #777; }
         input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
             outline: none; border-color: var(--accent-blue);
@@ -148,22 +149,14 @@
             #print-area { 
                 display: block; 
             }
-            
-            /* Prioritas #1: Hindari pemotongan SETELAH blok-blok header ini. */
-            .output-header-info,
-            .output-cp-container {
-                page-break-after: auto !important;
+            .output-document {
+                box-shadow: none;
+                border: none;
             }
-
-            /* Prioritas #2: Hindari pemotongan DI DALAM baris tabel. */
-            tr, tbody {
-                page-break-inside: auto !important;
-            }
-
-            /* Prioritas #3: Ulangi header tabel jika tabel terpotong. */
-            thead {
-                display: table-header-group !important;
-            }
+            .output-header-info, .output-cp-container { page-break-after: auto !important; }
+            tr, tbody { page-break-inside: auto !important; }
+            thead { display: table-header-group !important; }
+            .signature-block { page-break-inside: avoid !important; }
         }
     </style>
 </head>
@@ -183,8 +176,7 @@
             <button class="tab-button" onclick="openTab(event, 'apiKeyTab')">API KEY</button>
         </div>
 
-        <!-- All Tabs Content... (sama seperti sebelumnya, tidak perlu diubah) -->
-         <!-- TAB 1: INFORMASI UMUM -->
+        <!-- TAB 1: INFORMASI UMUM -->
         <div id="infoUmum" class="tab-content">
              <div class="form-grid">
                 <div class="form-group"><label for="tahunPelajaran">Tahun Pelajaran</label><input type="text" id="tahunPelajaran" placeholder="Contoh: 2024/2025"></div>
@@ -194,6 +186,31 @@
                 <div class="form-group"><label for="faseKelas">Fase / Kelas</label><input type="text" id="faseKelas" placeholder="Contoh: F / XI"></div>
                 <div class="form-group"><label for="mataPelajaran">Mata Pelajaran</label><input type="text" id="mataPelajaran" placeholder="Contoh: Dasar-dasar Teknik Jaringan Komputer dan Telekomunikasi"></div>
             </div>
+             <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <h3 style="text-align: center; color: var(--text-secondary); font-weight: 500; margin-top:0; margin-bottom: 20px;">INFORMASI TANDA TANGAN</h3>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="lokasiTanggalTTD">Lokasi & Tanggal Tanda Tangan</label>
+                        <input type="text" id="lokasiTanggalTTD" placeholder="Contoh: Banyuwangi, 15 Juli 2025">
+                    </div>
+                    <div class="form-group">
+                        <label for="namaKepsek">Nama Kepala Sekolah</label>
+                        <input type="text" id="namaKepsek" placeholder="Contoh: Drs.H WITJANARKO,M.Pd.">
+                    </div>
+                    <div class="form-group">
+                        <label for="nipKepsek">NIP/NPM Kepala Sekolah</label>
+                        <input type="text" id="nipKepsek" placeholder="Contoh: 196709271996071001">
+                    </div>
+                    <div class="form-group">
+                        <label for="namaGuru">Nama Guru Pengajar</label>
+                        <input type="text" id="namaGuru" placeholder="Contoh: ABDUL SHOBIR,ST">
+                    </div>
+                    <div class="form-group">
+                        <label for="nipGuru">NIP/NPM Guru Pengajar</label>
+                        <input type="text" id="nipGuru" placeholder="Contoh: 197511142000071001">
+                    </div>
+                </div>
+            </div>
              <div class="button-container">
                 <button class="action-button" onclick="saveFormData()">Simpan Semua Data ke Browser</button>
             </div>
@@ -202,7 +219,17 @@
         <!-- TAB 2: MANAJEMEN CP -->
         <div id="manajemenCp" class="tab-content">
             <div class="form-grid">
-                <div class="form-group full-width"><label for="capaianPembelajaran">Capaian Pembelajaran (CP)</label><textarea id="capaianPembelajaran" placeholder="Masukkan Capaian Pembelajaran Fase secara lengkap di sini..."></textarea></div>
+                 <div class="form-group full-width">
+                    <label>Mode Tampilan CP di Tabel Hasil</label>
+                    <div style="display: flex; gap: 20px; margin-top: 5px;">
+                        <label style="display:flex; align-items:center; gap: 5px; cursor:pointer; color: var(--text-primary);"><input type="radio" name="cpMode" value="lengkap" checked> Tampilkan CP Lengkap</label>
+                        <label style="display:flex; align-items:center; gap: 5px; cursor:pointer; color: var(--text-primary);"><input type="radio" name="cpMode" value="elemen"> Tampilkan CP per Elemen</label>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="capaianPembelajaran">Capaian Pembelajaran (CP)</label>
+                    <textarea id="capaianPembelajaran" placeholder="Masukkan Capaian Pembelajaran Fase secara lengkap di sini. Jika berupa daftar (misal: 1. ..., 2. ...), AI akan otomatis menjadikan setiap poin sebagai 'Elemen'."></textarea>
+                </div>
                 <div class="form-group"><label for="kodeUtama">Kode Utama TP</label><input type="text" id="kodeUtama" placeholder="Contoh: TJKT.11"></div>
                 <div class="form-group"><label for="totalJam">Total Jam Pembelajaran (JP)</label><input type="text" id="totalJam" placeholder="Contoh: 216 JP (Opsional, pastikan genap untuk alokasi genap)"></div>
                 <div class="form-group full-width"><label for="perintahTambahan">Perintah Tambahan (Opsional)</label><textarea id="perintahTambahan" placeholder="Contoh: Buat menjadi 5 TP saja, urutkan kompetensi dari C2 hingga C6, fokus pada project-based learning. Untuk alokasi waktu, pastikan kelipatan 2 atau 4."></textarea></div>
@@ -271,7 +298,8 @@
         const allTabs = ['infoUmum', 'manajemenCp', 'hasilAnalisis', 'hasilAtp', 'apiKeyTab'];
         const formIds = [
             'tahunPelajaran', 'satuanPendidikan', 'programKeahlian', 'konsentrasiKeahlian', 'faseKelas', 'mataPelajaran',
-            'capaianPembelajaran', 'kodeUtama', 'totalJam', 'perintahTambahan'
+            'capaianPembelajaran', 'kodeUtama', 'totalJam', 'perintahTambahan',
+            'lokasiTanggalTTD', 'namaKepsek', 'nipKepsek', 'namaGuru', 'nipGuru'
         ];
 
         function openTab(evt, tabName) {
@@ -291,7 +319,8 @@
         function saveFormData() {
             const formData = {};
             formIds.forEach(id => {
-                formData[id] = document.getElementById(id).value;
+                const el = document.getElementById(id);
+                if (el) formData[id] = el.value;
             });
             localStorage.setItem('kurikulumFormData', JSON.stringify(formData));
             alert('Semua data formulir berhasil disimpan di browser Anda.');
@@ -312,7 +341,7 @@
                 showStatus('apiKeyStatus', 'Kunci API berhasil dimuat.', 2000);
             }
         }
-
+        
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.tab-button').click();
             loadFormData();
@@ -354,7 +383,10 @@
         }
 
         document.getElementById('generateBtn').addEventListener('click', async () => {
-            const getVal = id => document.getElementById(id).value || document.getElementById(id).placeholder;
+            const getVal = id => {
+                const el = document.getElementById(id);
+                return el ? (el.value || el.placeholder) : '';
+            };
             
             const apiKey = getVal('apiKey');
             if (!apiKey) {
@@ -382,24 +414,22 @@
 
             generateBtn.disabled = true;
             generateBtn.textContent = 'Generating...';
-
+            
             const perintahTambahan = getVal('perintahTambahan');
             const promptTambahanSection = (perintahTambahan && perintahTambahan.trim() !== '')
                 ? `\n- Perintah Tambahan dari Pengguna: ${perintahTambahan}`
                 : '';
-
+                
             const prompt = `
 Anda adalah seorang ahli kurikulum pendidikan vokasi di Indonesia yang sangat teliti.
-Tugas Anda: Pecah "Capaian Pembelajaran Fase" (CP) menjadi komponen-komponen untuk "Analisis CP" dan "Alur Tujuan Pembelajaran" (ATP).
+Tugas Anda: Pecah "Capaian Pembelajaran Fase" (CP) berikut ini menjadi "Elemen" yang logis. Untuk setiap elemen, buat "capaian_elemen" yang spesifik, lalu pecah lagi menjadi beberapa Tujuan Pembelajaran (TP).
 Hasilkan struktur data dalam format JSON yang SANGAT VALID. Jangan sertakan teks atau markup lain di luar JSON.
 
-Referensi Taksonomi Bloom (WAJIB DIGUNAKAN):
-- C1 (Mengingat): Mengidentifikasi, Menyebutkan.
-- C2 (Memahami): Menjelaskan, Mengklasifikasikan, Menerangkan.
-- C3 (Menerapkan): Menggunakan, Mendemonstrasikan, Melaksanakan, Menerapkan.
-- C4 (Menganalisis): Menganalisis, Membandingkan, Mengorganisir, Membedakan.
-- C5 (Mengevaluasi): Mengevaluasi, Memvalidasi, Memberi argumen, Menyimpulkan.
-- C6 (Mencipta): Merancang, Membangun, Membuat, Mengembangkan, Mengonstruksi.
+ATURAN PENTING UNTUK IDENTIFIKASI ELEMEN:
+- Jika CP yang diberikan pengguna berupa daftar bernomor atau berpoin, anggap SETIAP ITEM DAFTAR sebagai SATU ELEMEN TERPISAH. Nama elemen harus diambil dari inti kalimat item daftar tersebut.
+- Jika CP berupa paragraf naratif, identifikasi pengelompokan tematik yang logis sebagai "Elemen".
+
+Referensi Taksonomi Bloom (WAJIB DIGUNAKAN): C1 (Mengingat), C2 (Memahami), C3 (Menerapkan), C4 (Menganalisis), C5 (Mengevaluasi), C6 (Mencipta).
 
 Informasi Input dari Pengguna:
 - Mata Pelajaran: ${getVal('mataPelajaran')}
@@ -411,8 +441,8 @@ Struktur JSON yang WAJIB DIIKUTI:
 Array JSON, dimana setiap objek mewakili satu "Elemen".
 Struktur setiap objek "Elemen":
 {
-  "elemen": "Nama elemen yang diekstrak dari CP",
-  "capaian_elemen": "Deskripsi capaian pembelajaran untuk elemen ini. Mulai dengan kata kerja, contoh: 'merancang dan membangun solusi...'",
+  "elemen": "Nama elemen yang diekstrak dari CP.",
+  "capaian_elemen": "Deskripsi capaian pembelajaran HANYA untuk elemen ini. Contoh: 'membuat produk Konverter USB TLL To Kline'. JANGAN sertakan frasa pembuka seperti 'Pada akhir Fase F...'.",
   "tps": [
     {
       "tujuan_pembelajaran_inti": "Teks inti dari TP setelah kata kerja. Contoh: 'arsitektur dan organisasi komputer'",
@@ -425,11 +455,9 @@ Struktur setiap objek "Elemen":
 }
 
 Instruksi Penting:
-1. Bagi CP menjadi beberapa "Elemen" yang logis.
-2. Untuk setiap "Elemen", buat beberapa "Tujuan Pembelajaran" (TP) dalam array "tps".
-3. Untuk setiap TP, tentukan "kompetensi_kata" (KKO), "kompetensi_level" (C1-C6), "tujuan_pembelajaran_inti" (sisa kalimat setelah KKO), "materi", dan "alokasi_waktu_estimasi" (angka saja, sebaiknya kelipatan 2 atau 4).
-4. Jika ada perintah tambahan, prioritaskan urutan TP dari level kognitif rendah ke tinggi.
-5. Pastikan outputnya adalah JSON murni yang valid.
+1. Ikuti ATURAN PENTING UNTUK IDENTIFIKASI ELEMEN di atas.
+2. Untuk setiap TP, tentukan "kompetensi_kata", "kompetensi_level", "tujuan_pembelajaran_inti", "materi", dan "alokasi_waktu_estimasi".
+3. Pastikan outputnya adalah JSON murni yang valid.
 `;
 
             try {
@@ -484,7 +512,6 @@ Instruksi Penting:
                 }
                 finalJPs = flooredUnits.map(unit => unit * 2);
             } else {
-                console.warn("Target JP ganjil. Alokasi genap tidak dijamin. Menggunakan distribusi normal.");
                 let scaledJPs = allEstimates.map(jp => jp * scalingFactor);
                 let flooredJPs = scaledJPs.map(jp => Math.floor(jp));
                 let remainder = targetTotalJP - flooredJPs.reduce((sum, jp) => sum + jp, 0);
@@ -504,9 +531,14 @@ Instruksi Penting:
             return processedData;
         }
 
-        // === FUNGSI RENDER DENGAN LOGIKA BARU UNTUK CP ===
         function renderDocuments(rawData) {
-            const getVal = id => document.getElementById(id).value || document.getElementById(id).placeholder;
+            // FIX: Hapus tanda tangan lama sebelum render yang baru
+            document.querySelectorAll('.signature-block').forEach(el => el.remove());
+
+            const getVal = id => {
+                const el = document.getElementById(id);
+                return el ? (el.value || el.placeholder) : '';
+            };
             
             const totalJamString = getVal('totalJam');
             const targetTotalJP = parseInt(totalJamString.replace(/\D/g, ''), 10);
@@ -522,13 +554,11 @@ Instruksi Penting:
                     <tr><td>Mata Pelajaran</td><td>: ${getVal('mataPelajaran')}</td></tr>
                 </table>`;
             
-            // === PERUBAHAN UTAMA: Ambil CP Lengkap Sekali Saja ===
             const capaianPembelajaranLengkap = getVal('capaianPembelajaran');
             
             document.getElementById('analisis-header').innerHTML = identitasHTML;
             document.getElementById('atp-header').innerHTML = identitasHTML;
-            // Di ATP, kotak CP di atas tabel tetap menampilkan CP lengkap.
-            document.getElementById('atp-cp').innerHTML = `<strong>Capaian Pembelajaran Fase</strong><p style="margin: 5px 0 0 0;">${capaianPembelajaranLengkap}</p>`;
+            document.getElementById('atp-cp').innerHTML = `<strong>Capaian Pembelajaran Fase</strong><p style="margin: 5px 0 0 0;">${capaianPembelajaranLengkap.replace(/\n/g, '<br>')}</p>`;
 
             const analisisTbody = document.querySelector('#analisis-table tbody');
             const atpTbody = document.querySelector('#atp-table tbody');
@@ -538,14 +568,13 @@ Instruksi Penting:
             let tpCounter = 1;
             let finalTotalJP = 0;
             const kodeUtama = getVal('kodeUtama');
+            
+            // ** LOGIKA BARU SESUAI PERMINTAAN **
+            const cpMode = document.querySelector('input[name="cpMode"]:checked').value;
 
             data.forEach(item => {
                 const tujuanCount = item.tps.length;
                 if(tujuanCount === 0) return;
-
-                // Logika lama untuk CP per elemen tidak digunakan lagi untuk display
-                // const capaianElemenText = item.capaian_elemen || '';
-                // const capaianPembelajaranElemen = `Murid dapat ${...}`;
 
                 item.tps.forEach((tp, i) => {
                     const kode = `${kodeUtama}.${tpCounter++}`;
@@ -555,25 +584,44 @@ Instruksi Penting:
                     const materi = tp.materi || '';
                     finalTotalJP += alokasiWaktu;
 
-                    // --- Render Analisis Table Row ---
                     const anlRow = analisisTbody.insertRow();
                     anlRow.insertCell().textContent = kode;
                     if (i === 0) {
                         anlRow.insertCell().rowSpan = tujuanCount; anlRow.cells[1].innerHTML = item.elemen;
-                        // === Gunakan CP Lengkap di sini ===
-                        anlRow.insertCell().rowSpan = tujuanCount; anlRow.cells[2].innerHTML = capaianPembelajaranLengkap;
+                        
+                        // Menentukan teks CP berdasarkan mode yang dipilih
+                        let cpTextForColumn;
+                        if (cpMode === 'lengkap') {
+                            cpTextForColumn = capaianPembelajaranLengkap.replace(/\n/g, '<br>');
+                        } else { // cpMode is 'elemen'
+                            const capaianElemen = item.capaian_elemen || item.elemen; // Fallback jika AI tidak memberikan capaian_elemen
+                            cpTextForColumn = `Pada akhir Fase F, murid memiliki kemampuan ${capaianElemen}`;
+                        }
+                        
+                        const cpCell = anlRow.insertCell();
+                        cpCell.rowSpan = tujuanCount;
+                        cpCell.innerHTML = cpTextForColumn;
                     }
                     anlRow.insertCell().textContent = tp.kompetensi_kata;
                     anlRow.insertCell().textContent = materi; 
                     anlRow.insertCell().textContent = rumusanTP;
 
-                    // --- Render ATP Table Row ---
                     const atpRow = atpTbody.insertRow();
                     atpRow.insertCell().textContent = kode;
                     if (i === 0) {
                         atpRow.insertCell().rowSpan = tujuanCount; atpRow.cells[1].innerHTML = item.elemen;
-                        // === Gunakan CP Lengkap di sini juga ===
-                        atpRow.insertCell().rowSpan = tujuanCount; atpRow.cells[2].innerHTML = capaianPembelajaranLengkap;
+                        
+                        let cpTextForColumn;
+                         if (cpMode === 'lengkap') {
+                            cpTextForColumn = capaianPembelajaranLengkap.replace(/\n/g, '<br>');
+                        } else { // cpMode is 'elemen'
+                            const capaianElemen = item.capaian_elemen || item.elemen;
+                            cpTextForColumn = `Pada akhir Fase F, murid memiliki kemampuan ${capaianElemen}`;
+                        }
+                        
+                        const cpCell = atpRow.insertCell();
+                        cpCell.rowSpan = tujuanCount;
+                        cpCell.innerHTML = cpTextForColumn;
                     }
                     atpRow.insertCell().textContent = rumusanTP;
                     atpRow.insertCell().textContent = materi;
@@ -583,13 +631,45 @@ Instruksi Penting:
                 });
             });
 
-            // Add Total JP row to ATP table
             const totalBody = atpTbody.insertRow();
             const totalCell = totalBody.insertCell();
             totalCell.colSpan = 6;
             totalCell.innerHTML = `<strong>Total Jam Pelajaran: ${finalTotalJP} JP</strong>`;
             totalCell.style.textAlign = 'right';
             totalCell.style.fontWeight = 'bold';
+            
+            const lokasiTanggal = getVal('lokasiTanggalTTD');
+            const namaKepsek = getVal('namaKepsek');
+            const nipKepsek = getVal('nipKepsek') ? `NPM ${getVal('nipKepsek')}` : '';
+            const namaGuru = getVal('namaGuru');
+            const nipGuru = getVal('nipGuru') ? `NPM ${getVal('nipGuru')}` : '';
+
+            if (namaKepsek || namaGuru) {
+                const signatureHTML = `
+                    <div class="signature-block" style="margin-top: 40px; font-size: 12pt; width: 100%; display: table;">
+                        <div style="display: table-row;">
+                            <div style="display: table-cell; text-align: center; width: 50%; padding: 0 15px;">
+                                <p style="margin:0; padding:0;">Mengetahui</p>
+                                <p style="margin:0; padding:0;">Kepala Sekolah</p>
+                                <br><br><br><br>
+                                <p style="margin:0; padding:0; font-weight: bold; text-decoration: underline;">${namaKepsek}</p>
+                                <p style="margin:0; padding:0;">${nipKepsek}</p>
+                            </div>
+                            <div style="display: table-cell; text-align: center; width: 50%; padding: 0 15px;">
+                                <p style="margin:0; padding:0;">${lokasiTanggal}</p>
+                                <p style="margin:0; padding:0;">Guru Pengajar</p>
+                                <br><br><br><br>
+                                <p style="margin:0; padding:0; font-weight: bold; text-decoration: underline;">${namaGuru}</p>
+                                <p style="margin:0; padding:0;">${nipGuru}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('output-analisis-container').insertAdjacentHTML('beforeend', signatureHTML);
+                document.getElementById('output-atp-container').insertAdjacentHTML('beforeend', signatureHTML);
+            }
+
 
             document.getElementById('output-analisis-wrapper').style.display = 'block';
             document.getElementById('output-atp-wrapper').style.display = 'block';
