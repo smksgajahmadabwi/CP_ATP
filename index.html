@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator ATP & Analisis CP - Kurikulum Merdeka</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Teko:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+
+        /* === Dark Theme Styling === */
+        :root {
+            --bg-dark: #1a1c20;
+            --primary-dark: #2a2d34;
+            --secondary-dark: #333740;
+            --border-color: #444857;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-blue: #00aaff;
+            --accent-green: #28a745;
+            --accent-save: #4a4e57;
+            --accent-button-blue: #3498db;
+            --table-header-bg: #e9ecef;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--primary-dark);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .main-title { text-align: center; margin-bottom: 30px; }
+        .main-title h1 { font-family: 'Teko', sans-serif; color: var(--accent-blue); font-size: 2.5rem; margin: 0; letter-spacing: 1.5px; }
+        .main-title h2 { font-family: 'Roboto', sans-serif; font-size: 1.2rem; margin: 5px 0 0 0; font-weight: 500; color: var(--text-secondary); }
+
+        /* Tabs */
+        .tab-container { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 25px; flex-wrap: wrap;}
+        .tab-button {
+            padding: 12px 25px; cursor: pointer; border: none; background-color: transparent;
+            font-size: 16px; font-weight: 700; color: var(--text-secondary);
+            border-bottom: 3px solid transparent; transition: all 0.3s ease; margin-bottom: -2px;
+        }
+        .tab-button.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+
+        /* Form */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); font-size: 14px; }
+        input[type="text"], input[type="password"], textarea {
+            width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;
+            font-size: 14px; box-sizing: border-box; background-color: var(--secondary-dark);
+            color: var(--text-primary); transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="text"]::placeholder, textarea::placeholder { color: #777; }
+        input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+            outline: none; border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
+        }
+        textarea { resize: vertical; min-height: 120px; }
+
+        /* API Key Input Group */
+        .api-key-input-group { display: flex; gap: 10px; align-items: center; }
+        .api-key-input-group input { flex-grow: 1; }
+        #saveApiBtn {
+            padding: 12px 20px; background-color: var(--accent-save); color: white;
+            border: none; border-radius: 6px; cursor: pointer; font-weight: 500;
+            transition: background-color 0.3s; flex-shrink: 0;
+        }
+        #saveApiBtn:hover { background-color: #5a5e67; }
+        #apiKeyStatus {
+            font-size: 12px; margin-top: 8px; color: var(--accent-green);
+            opacity: 0; transition: opacity 0.5s ease-in-out; height: 14px;
+        }
+
+        /* Buttons */
+        .button-container {
+            margin-top: 30px; padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex; justify-content: center; flex-wrap: wrap; gap: 15px;
+        }
+        .action-button {
+            padding: 12px 30px; font-size: 16px; font-weight: 700; border: none;
+            border-radius: 8px; cursor: pointer; transition: background-color 0.3s, transform 0.2s;
+            color: white;
+            background-color: var(--accent-button-blue);
+        }
+        .action-button:hover {
+            background-color: #2980b9; 
+            transform: translateY(-2px);
+        }
+        .action-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loader */
+        #loader { display: none; text-align: center; margin: 40px auto; font-size: 18px; color: var(--accent-blue); }
+        
+        /* === Output Areas === */
+        .output-wrapper { display: none; }
+        .output-document {
+            margin-top: 30px; background-color: #fff; color: #000; padding: 40px;
+            border: 1px solid #ddd; font-family: 'Times New Roman', Times, serif;
+        }
+        .output-document h3 { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 20px; color: #000; font-size: 14pt; }
+        .output-header-info { margin-bottom: 20px; }
+        .output-header-info table { width: 100%; max-width: 600px; border: none; margin: 0 auto; }
+        .output-header-info td { padding: 2px 5px; font-size: 12pt; color: #000; vertical-align: top; }
+        .output-header-info td:first-child { width: 180px; font-weight: 500;}
+        .output-cp-container { border: 1px solid black; padding: 10px; margin-bottom: 20px; font-size: 12pt; color: #000; }
+        .output-document table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12pt; }
+        .output-document table th, .output-document table td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; color: #000; }
+        .output-document table th { background-color: var(--table-header-bg); font-weight: bold; text-align: center; }
+        
+        /* === Print Specific Styles (FINAL REVISION) === */
+        @media print {
+            body { 
+                background-color: #fff; 
+                color: #000; 
+                padding: 0; 
+                margin: 0; 
+            }
+            .no-print { 
+                display: none !important; 
+            }
+            #print-area { 
+                display: block; 
+            }
+            
+            /* Prioritas #1: Hindari pemotongan SETELAH blok-blok header ini. */
+            .output-header-info,
+            .output-cp-container {
+                page-break-after: auto !important;
+            }
+
+            /* Prioritas #2: Hindari pemotongan DI DALAM baris tabel. */
+            tr, tbody {
+                page-break-inside: auto !important;
+            }
+
+            /* Prioritas #3: Ulangi header tabel jika tabel terpotong. */
+            thead {
+                display: table-header-group !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container no-print">
+        <div class="main-title">
+            <h1>ANALISA CP & ALUR TUJUAN PEMBELAJARAN</h1>
+            <h2>SMK GAJAH MADA BANYUWANGI</h2>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-button" onclick="openTab(event, 'infoUmum')">INFORMASI UMUM</button>
+            <button class="tab-button" onclick="openTab(event, 'manajemenCp')">MANAJEMEN CP</button>
+            <button class="tab-button" onclick="openTab(event, 'hasilAnalisis')">HASIL ANALISIS CP</button>
+            <button class="tab-button" onclick="openTab(event, 'hasilAtp')">HASIL ATP</button>
+            <button class="tab-button" onclick="openTab(event, 'apiKeyTab')">API KEY</button>
+        </div>
+
+        <!-- All Tabs Content... (sama seperti sebelumnya, tidak perlu diubah) -->
+         <!-- TAB 1: INFORMASI UMUM -->
+        <div id="infoUmum" class="tab-content">
+             <div class="form-grid">
+                <div class="form-group"><label for="tahunPelajaran">Tahun Pelajaran</label><input type="text" id="tahunPelajaran" placeholder="Contoh: 2024/2025"></div>
+                <div class="form-group"><label for="satuanPendidikan">Satuan Pendidikan</label><input type="text" id="satuanPendidikan" value="SMK Gajah Mada Banyuwangi"></div>
+                <div class="form-group"><label for="programKeahlian">Program Keahlian</label><input type="text" id="programKeahlian" placeholder="Contoh: Teknik Jaringan Komputer dan Telekomunikasi"></div>
+                <div class="form-group"><label for="konsentrasiKeahlian">Konsentrasi Keahlian</label><input type="text" id="konsentrasiKeahlian" placeholder="Contoh: Teknik Komputer dan Jaringan"></div>
+                <div class="form-group"><label for="faseKelas">Fase / Kelas</label><input type="text" id="faseKelas" placeholder="Contoh: F / XI"></div>
+                <div class="form-group"><label for="mataPelajaran">Mata Pelajaran</label><input type="text" id="mataPelajaran" placeholder="Contoh: Dasar-dasar Teknik Jaringan Komputer dan Telekomunikasi"></div>
+            </div>
+             <div class="button-container">
+                <button class="action-button" onclick="saveFormData()">Simpan Semua Data ke Browser</button>
+            </div>
+        </div>
+
+        <!-- TAB 2: MANAJEMEN CP -->
+        <div id="manajemenCp" class="tab-content">
+            <div class="form-grid">
+                <div class="form-group full-width"><label for="capaianPembelajaran">Capaian Pembelajaran (CP)</label><textarea id="capaianPembelajaran" placeholder="Masukkan Capaian Pembelajaran Fase secara lengkap di sini..."></textarea></div>
+                <div class="form-group"><label for="kodeUtama">Kode Utama TP</label><input type="text" id="kodeUtama" placeholder="Contoh: TJKT.11"></div>
+                <div class="form-group"><label for="totalJam">Total Jam Pembelajaran (JP)</label><input type="text" id="totalJam" placeholder="Contoh: 216 JP (Opsional, pastikan genap untuk alokasi genap)"></div>
+                <div class="form-group full-width"><label for="perintahTambahan">Perintah Tambahan (Opsional)</label><textarea id="perintahTambahan" placeholder="Contoh: Buat menjadi 5 TP saja, urutkan kompetensi dari C2 hingga C6, fokus pada project-based learning. Untuk alokasi waktu, pastikan kelipatan 2 atau 4."></textarea></div>
+            </div>
+            <div class="button-container">
+                <button id="generateBtn" class="action-button">Generate Dokumen</button>
+            </div>
+        </div>
+
+        <!-- TAB 3: HASIL ANALISIS CP -->
+        <div id="hasilAnalisis" class="tab-content">
+            <p>Hasil Analisis Capaian Pembelajaran akan ditampilkan di sini setelah proses 'Generate'.</p>
+            <div id="loader" style="display: none;">Memproses... Mohon tunggu sebentar.</div>
+            <div id="output-analisis-wrapper" class="output-wrapper">
+                <div class="button-container">
+                     <button id="printBtnAnalisis" class="action-button">CETAK ANALISIS CP</button>
+                </div>
+                <div id="output-analisis-container" class="output-document">
+                    <h3>ANALISIS CAPAIAN PEMBELAJARAN</h3>
+                    <div class="output-header-info" id="analisis-header"></div>
+                    <table id="analisis-table">
+                        <thead><tr><th>KODE</th><th>ELEMEN</th><th>CAPAIAN PEMBELAJARAN</th><th>KOMPETENSI</th><th>KONTEN / MATERI</th><th>RUMUSAN TUJUAN PEMBELAJARAN</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: HASIL ATP -->
+        <div id="hasilAtp" class="tab-content">
+            <p>Hasil Alur Tujuan Pembelajaran (ATP) akan ditampilkan di sini setelah proses 'Generate'.</p>
+            <div id="output-atp-wrapper" class="output-wrapper">
+                 <div class="button-container">
+                     <button id="printBtnATP" class="action-button">CETAK ATP</button>
+                </div>
+                <div id="output-atp-container" class="output-document">
+                    <h3>ALUR TUJUAN PEMBELAJARAN (ATP)</h3>
+                    <div class="output-header-info" id="atp-header"></div>
+                    <div class="output-cp-container" id="atp-cp"></div>
+                    <table id="atp-table">
+                        <thead><tr><th>KODE</th><th>ELEMEN</th><th>CAPAIAN PEMBELAJARAN</th><th>TUJUAN PEMBELAJARAN</th><th>MATERI</th><th>ALOKASI WAKTU</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 5: API KEY -->
+        <div id="apiKeyTab" class="tab-content">
+            <div class="form-group">
+                <label for="apiKey">API KEY (GEMINI)</label>
+                <div class="api-key-input-group">
+                    <input type="password" id="apiKey" placeholder="Masukkan API Key Anda di sini">
+                    <button id="saveApiBtn">Simpan</button>
+                </div>
+                <div id="apiKeyStatus"></div>
+                <small style="color: var(--text-secondary); margin-top: 5px;">Kunci API disimpan dengan aman di peramban Anda dan tidak dikirim ke mana pun selain ke Google AI.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container for printable content -->
+    <div id="print-area" style="display: none;"></div>
+
+    <script>
+        const allTabs = ['infoUmum', 'manajemenCp', 'hasilAnalisis', 'hasilAtp', 'apiKeyTab'];
+        const formIds = [
+            'tahunPelajaran', 'satuanPendidikan', 'programKeahlian', 'konsentrasiKeahlian', 'faseKelas', 'mataPelajaran',
+            'capaianPembelajaran', 'kodeUtama', 'totalJam', 'perintahTambahan'
+        ];
+
+        function openTab(evt, tabName) {
+            document.querySelectorAll(".tab-content").forEach(tc => tc.style.display = "none");
+            document.querySelectorAll(".tab-button").forEach(tb => tb.classList.remove("active"));
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.classList.add("active");
+        }
+        
+        function showStatus(elementId, message, duration = 3000) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.style.opacity = 1;
+            setTimeout(() => { statusEl.style.opacity = 0; }, duration);
+        }
+        
+        function saveFormData() {
+            const formData = {};
+            formIds.forEach(id => {
+                formData[id] = document.getElementById(id).value;
+            });
+            localStorage.setItem('kurikulumFormData', JSON.stringify(formData));
+            alert('Semua data formulir berhasil disimpan di browser Anda.');
+        }
+
+        function loadFormData() {
+            const savedData = localStorage.getItem('kurikulumFormData');
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                Object.keys(formData).forEach(key => {
+                    const el = document.getElementById(key);
+                    if (el) el.value = formData[key];
+                });
+            }
+            const savedKey = localStorage.getItem('geminiApiKey');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+                showStatus('apiKeyStatus', 'Kunci API berhasil dimuat.', 2000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.tab-button').click();
+            loadFormData();
+        });
+        
+        document.getElementById('saveApiBtn').addEventListener('click', () => {
+            const apiKey = document.getElementById('apiKey').value;
+            if (apiKey && apiKey.trim() !== '') {
+                localStorage.setItem('geminiApiKey', apiKey);
+                showStatus('apiKeyStatus', 'Kunci API berhasil disimpan!');
+            } else {
+                localStorage.removeItem('geminiApiKey');
+                showStatus('apiKeyStatus', 'Kunci API dihapus dari penyimpanan.', 2000);
+            }
+        });
+        
+        document.getElementById('printBtnAnalisis').addEventListener('click', () => {
+            printDocument('output-analisis-container');
+        });
+        
+        document.getElementById('printBtnATP').addEventListener('click', () => {
+            printDocument('output-atp-container');
+        });
+
+        function printDocument(elementId) {
+            const printContent = document.getElementById(elementId).cloneNode(true);
+            const printArea = document.getElementById('print-area');
+            const mainContainer = document.querySelector('.container');
+            
+            mainContainer.classList.add('no-print');
+            printArea.innerHTML = '';
+            printArea.appendChild(printContent);
+            printArea.style.display = 'block';
+
+            window.print();
+
+            printArea.style.display = 'none';
+            mainContainer.classList.remove('no-print');
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const getVal = id => document.getElementById(id).value || document.getElementById(id).placeholder;
+            
+            const apiKey = getVal('apiKey');
+            if (!apiKey) {
+                alert('Silakan masukkan Kunci API di tab "API KEY" terlebih dahulu.');
+                openTab({currentTarget: document.querySelectorAll('.tab-button')[4]}, 'apiKeyTab');
+                return;
+            }
+            
+            const cp = getVal('capaianPembelajaran');
+            const kodeUtama = getVal('kodeUtama');
+            if (!cp.trim() || !kodeUtama.trim()) {
+                alert('Harap isi "Capaian Pembelajaran" dan "Kode Utama" untuk melanjutkan.');
+                openTab({currentTarget: document.querySelectorAll('.tab-button')[1]}, 'manajemenCp');
+                return;
+            }
+
+            const loader = document.getElementById('loader');
+            const generateBtn = document.getElementById('generateBtn');
+            const outputWrappers = document.querySelectorAll('.output-wrapper');
+
+            loader.style.display = 'block';
+            outputWrappers.forEach(w => w.style.display = 'none');
+            document.querySelector('#hasilAnalisis p').style.display = 'none';
+            document.querySelector('#hasilAtp p').style.display = 'none';
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+
+            const perintahTambahan = getVal('perintahTambahan');
+            const promptTambahanSection = (perintahTambahan && perintahTambahan.trim() !== '')
+                ? `\n- Perintah Tambahan dari Pengguna: ${perintahTambahan}`
+                : '';
+
+            const prompt = `
+Anda adalah seorang ahli kurikulum pendidikan vokasi di Indonesia yang sangat teliti.
+Tugas Anda: Pecah "Capaian Pembelajaran Fase" (CP) menjadi komponen-komponen untuk "Analisis CP" dan "Alur Tujuan Pembelajaran" (ATP).
+Hasilkan struktur data dalam format JSON yang SANGAT VALID. Jangan sertakan teks atau markup lain di luar JSON.
+
+Referensi Taksonomi Bloom (WAJIB DIGUNAKAN):
+- C1 (Mengingat): Mengidentifikasi, Menyebutkan.
+- C2 (Memahami): Menjelaskan, Mengklasifikasikan, Menerangkan.
+- C3 (Menerapkan): Menggunakan, Mendemonstrasikan, Melaksanakan, Menerapkan.
+- C4 (Menganalisis): Menganalisis, Membandingkan, Mengorganisir, Membedakan.
+- C5 (Mengevaluasi): Mengevaluasi, Memvalidasi, Memberi argumen, Menyimpulkan.
+- C6 (Mencipta): Merancang, Membangun, Membuat, Mengembangkan, Mengonstruksi.
+
+Informasi Input dari Pengguna:
+- Mata Pelajaran: ${getVal('mataPelajaran')}
+- Fase/Kelas: ${getVal('faseKelas')}
+- Capaian Pembelajaran Fase (CP): ${cp}
+${promptTambahanSection}
+
+Struktur JSON yang WAJIB DIIKUTI:
+Array JSON, dimana setiap objek mewakili satu "Elemen".
+Struktur setiap objek "Elemen":
+{
+  "elemen": "Nama elemen yang diekstrak dari CP",
+  "capaian_elemen": "Deskripsi capaian pembelajaran untuk elemen ini. Mulai dengan kata kerja, contoh: 'merancang dan membangun solusi...'",
+  "tps": [
+    {
+      "tujuan_pembelajaran_inti": "Teks inti dari TP setelah kata kerja. Contoh: 'arsitektur dan organisasi komputer'",
+      "materi": "Materi/konten yang relevan. Contoh: 'Arsitektur Von Neumann, Komponen CPU'",
+      "alokasi_waktu_estimasi": 12,
+      "kompetensi_kata": "Kata kerja operasional dari Taksonomi Bloom. Contoh: 'Menganalisis'",
+      "kompetensi_level": "Kode level Taksonomi Bloom (C1-C6). Contoh: 'C4'"
+    }
+  ]
+}
+
+Instruksi Penting:
+1. Bagi CP menjadi beberapa "Elemen" yang logis.
+2. Untuk setiap "Elemen", buat beberapa "Tujuan Pembelajaran" (TP) dalam array "tps".
+3. Untuk setiap TP, tentukan "kompetensi_kata" (KKO), "kompetensi_level" (C1-C6), "tujuan_pembelajaran_inti" (sisa kalimat setelah KKO), "materi", dan "alokasi_waktu_estimasi" (angka saja, sebaiknya kelipatan 2 atau 4).
+4. Jika ada perintah tambahan, prioritaskan urutan TP dari level kognitif rendah ke tinggi.
+5. Pastikan outputnya adalah JSON murni yang valid.
+`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { response_mime_type: "application/json" }})
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+                }
+                const data = await response.json();
+                const atpData = JSON.parse(data.candidates[0].content.parts[0].text);
+                renderDocuments(atpData);
+
+                openTab({currentTarget: document.querySelectorAll('.tab-button')[2]}, 'hasilAnalisis');
+            } catch (error) {
+                console.error('Error generating documents:', error);
+                alert(`Terjadi kesalahan: ${error.message}. Periksa Kunci API, input Anda, dan coba lagi.\n\nDetail: ${error}`);
+                document.querySelector('#hasilAnalisis p').style.display = 'block';
+                document.querySelector('#hasilAtp p').style.display = 'block';
+            } finally {
+                loader.style.display = 'none';
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Dokumen';
+            }
+        });
+
+        function scaleAndDistributeJP(data, targetTotalJP) {
+            if (!targetTotalJP || isNaN(targetTotalJP) || targetTotalJP <= 0) return data; 
+            let allEstimates = [];
+            data.forEach(item => {
+                item.tps.forEach(tp => { allEstimates.push(Number(tp.alokasi_waktu_estimasi) || 1); });
+            });
+            if (allEstimates.length === 0) return data;
+            const aiTotalJP = allEstimates.reduce((sum, jp) => sum + jp, 0);
+            if (aiTotalJP === 0) return data;
+
+            let finalJPs;
+            const scalingFactor = targetTotalJP / aiTotalJP;
+            if (targetTotalJP % 2 === 0) {
+                const targetUnits = targetTotalJP / 2;
+                let scaledUnits = allEstimates.map(jp => (jp * scalingFactor) / 2);
+                let flooredUnits = scaledUnits.map(unit => Math.floor(unit));
+                let remainderUnits = targetUnits - flooredUnits.reduce((sum, unit) => sum + unit, 0);
+                const fractionalParts = scaledUnits.map((unit, index) => ({ index, fraction: unit - flooredUnits[index] }));
+                fractionalParts.sort((a, b) => b.fraction - a.fraction);
+                for (let i = 0; i < remainderUnits; i++) {
+                    flooredUnits[fractionalParts[i % fractionalParts.length].index]++;
+                }
+                finalJPs = flooredUnits.map(unit => unit * 2);
+            } else {
+                console.warn("Target JP ganjil. Alokasi genap tidak dijamin. Menggunakan distribusi normal.");
+                let scaledJPs = allEstimates.map(jp => jp * scalingFactor);
+                let flooredJPs = scaledJPs.map(jp => Math.floor(jp));
+                let remainder = targetTotalJP - flooredJPs.reduce((sum, jp) => sum + jp, 0);
+                const fractionalParts = scaledJPs.map((jp, index) => ({ index, fraction: jp - flooredJPs[index] }));
+                fractionalParts.sort((a, b) => b.fraction - a.fraction);
+                for (let i = 0; i < remainder; i++) {
+                    flooredJPs[fractionalParts[i % fractionalParts.length].index]++;
+                }
+                finalJPs = flooredJPs;
+            }
+            
+            const processedData = JSON.parse(JSON.stringify(data));
+            let jpIndex = 0;
+            processedData.forEach(item => {
+                item.tps.forEach(tp => { tp.alokasi_waktu_final = finalJPs[jpIndex++]; });
+            });
+            return processedData;
+        }
+
+        // === FUNGSI RENDER DENGAN LOGIKA BARU UNTUK CP ===
+        function renderDocuments(rawData) {
+            const getVal = id => document.getElementById(id).value || document.getElementById(id).placeholder;
+            
+            const totalJamString = getVal('totalJam');
+            const targetTotalJP = parseInt(totalJamString.replace(/\D/g, ''), 10);
+            const data = scaleAndDistributeJP(rawData, targetTotalJP);
+
+            const identitasHTML = `
+                <table>
+                    <tr><td>Tahun Pelajaran</td><td>: ${getVal('tahunPelajaran')}</td></tr>
+                    <tr><td>Satuan Pendidikan</td><td>: ${getVal('satuanPendidikan')}</td></tr>
+                    <tr><td>Program Keahlian</td><td>: ${getVal('programKeahlian')}</td></tr>
+                    <tr><td>Konsentrasi Keahlian</td><td>: ${getVal('konsentrasiKeahlian')}</td></tr>
+                    <tr><td>Fase / Kelas</td><td>: ${getVal('faseKelas')}</td></tr>
+                    <tr><td>Mata Pelajaran</td><td>: ${getVal('mataPelajaran')}</td></tr>
+                </table>`;
+            
+            // === PERUBAHAN UTAMA: Ambil CP Lengkap Sekali Saja ===
+            const capaianPembelajaranLengkap = getVal('capaianPembelajaran');
+            
+            document.getElementById('analisis-header').innerHTML = identitasHTML;
+            document.getElementById('atp-header').innerHTML = identitasHTML;
+            // Di ATP, kotak CP di atas tabel tetap menampilkan CP lengkap.
+            document.getElementById('atp-cp').innerHTML = `<strong>Capaian Pembelajaran Fase</strong><p style="margin: 5px 0 0 0;">${capaianPembelajaranLengkap}</p>`;
+
+            const analisisTbody = document.querySelector('#analisis-table tbody');
+            const atpTbody = document.querySelector('#atp-table tbody');
+            analisisTbody.innerHTML = '';
+            atpTbody.innerHTML = '';
+
+            let tpCounter = 1;
+            let finalTotalJP = 0;
+            const kodeUtama = getVal('kodeUtama');
+
+            data.forEach(item => {
+                const tujuanCount = item.tps.length;
+                if(tujuanCount === 0) return;
+
+                // Logika lama untuk CP per elemen tidak digunakan lagi untuk display
+                // const capaianElemenText = item.capaian_elemen || '';
+                // const capaianPembelajaranElemen = `Murid dapat ${...}`;
+
+                item.tps.forEach((tp, i) => {
+                    const kode = `${kodeUtama}.${tpCounter++}`;
+                    const kompetensiKata = tp.kompetensi_kata || '';
+                    const rumusanTP = `Murid dapat ${kompetensiKata.toLowerCase()} ${tp.tujuan_pembelajaran_inti} (${tp.kompetensi_level})`;
+                    const alokasiWaktu = tp.alokasi_waktu_final ?? tp.alokasi_waktu_estimasi;
+                    const materi = tp.materi || '';
+                    finalTotalJP += alokasiWaktu;
+
+                    // --- Render Analisis Table Row ---
+                    const anlRow = analisisTbody.insertRow();
+                    anlRow.insertCell().textContent = kode;
+                    if (i === 0) {
+                        anlRow.insertCell().rowSpan = tujuanCount; anlRow.cells[1].innerHTML = item.elemen;
+                        // === Gunakan CP Lengkap di sini ===
+                        anlRow.insertCell().rowSpan = tujuanCount; anlRow.cells[2].innerHTML = capaianPembelajaranLengkap;
+                    }
+                    anlRow.insertCell().textContent = tp.kompetensi_kata;
+                    anlRow.insertCell().textContent = materi; 
+                    anlRow.insertCell().textContent = rumusanTP;
+
+                    // --- Render ATP Table Row ---
+                    const atpRow = atpTbody.insertRow();
+                    atpRow.insertCell().textContent = kode;
+                    if (i === 0) {
+                        atpRow.insertCell().rowSpan = tujuanCount; atpRow.cells[1].innerHTML = item.elemen;
+                        // === Gunakan CP Lengkap di sini juga ===
+                        atpRow.insertCell().rowSpan = tujuanCount; atpRow.cells[2].innerHTML = capaianPembelajaranLengkap;
+                    }
+                    atpRow.insertCell().textContent = rumusanTP;
+                    atpRow.insertCell().textContent = materi;
+                    const cellAlokasi = atpRow.insertCell();
+                    cellAlokasi.textContent = `${alokasiWaktu} JP`;
+                    cellAlokasi.style.textAlign = 'center';
+                });
+            });
+
+            // Add Total JP row to ATP table
+            const totalBody = atpTbody.insertRow();
+            const totalCell = totalBody.insertCell();
+            totalCell.colSpan = 6;
+            totalCell.innerHTML = `<strong>Total Jam Pelajaran: ${finalTotalJP} JP</strong>`;
+            totalCell.style.textAlign = 'right';
+            totalCell.style.fontWeight = 'bold';
+
+            document.getElementById('output-analisis-wrapper').style.display = 'block';
+            document.getElementById('output-atp-wrapper').style.display = 'block';
+        }
+
+        // Anti-debug / anti-copy
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J' || event.key === 'C')) || (event.ctrlKey && event.key === 'U')) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
