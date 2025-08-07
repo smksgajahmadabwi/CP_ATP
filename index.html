@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator ATP & Analisis CP</title>
+    <title>Generator ATP & Analisis CP - Kurikulum Merdeka</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Teko:wght@700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
@@ -219,13 +219,6 @@
         <!-- TAB 2: MANAJEMEN CP -->
         <div id="manajemenCp" class="tab-content">
             <div class="form-grid">
-                 <div class="form-group full-width">
-                    <label>Mode Tampilan CP di Tabel Hasil</label>
-                    <div style="display: flex; gap: 20px; margin-top: 5px;">
-                        <label style="display:flex; align-items:center; gap: 5px; cursor:pointer; color: var(--text-primary);"><input type="radio" name="cpMode" value="lengkap" checked> Tampilkan CP Lengkap</label>
-                        <label style="display:flex; align-items:center; gap: 5px; cursor:pointer; color: var(--text-primary);"><input type="radio" name="cpMode" value="elemen"> Tampilkan CP per Elemen</label>
-                    </div>
-                </div>
                 <div class="form-group full-width">
                     <label for="capaianPembelajaran">Capaian Pembelajaran (CP)</label>
                     <textarea id="capaianPembelajaran" placeholder="Masukkan Capaian Pembelajaran Fase secara lengkap di sini. Jika berupa daftar (misal: 1. ..., 2. ...), AI akan otomatis menjadikan setiap poin sebagai 'Elemen'."></textarea>
@@ -251,7 +244,7 @@
                     <h3>ANALISIS CAPAIAN PEMBELAJARAN</h3>
                     <div class="output-header-info" id="analisis-header"></div>
                     <table id="analisis-table">
-                        <thead><tr><th>KODE</th><th>ELEMEN</th><th>CAPAIAN PEMBELAJARAN</th><th>KOMPETENSI</th><th>KONTEN / MATERI</th><th>RUMUSAN TUJUAN PEMBELAJARAN</th></tr></thead>
+                        <thead><tr><th>KODE</th><th>ELEMEN</th><th>CAPAIAN PEMBELAJARAN</th><th>KOMPETENSI</th><th>KONTEN</th><th>RUMUSAN TUJUAN PEMBELAJARAN</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -426,7 +419,7 @@ Tugas Anda: Pecah "Capaian Pembelajaran Fase" (CP) berikut ini menjadi "Elemen" 
 Hasilkan struktur data dalam format JSON yang SANGAT VALID. Jangan sertakan teks atau markup lain di luar JSON.
 
 ATURAN PENTING UNTUK IDENTIFIKASI ELEMEN:
-- Jika CP yang diberikan pengguna berupa daftar bernomor atau berpoin, anggap SETIAP ITEM DAFTAR sebagai SATU ELEMEN TERPISAH. Nama elemen harus diambil dari inti kalimat item daftar tersebut.
+- Jika CP yang diberikan pengguna berupa daftar bernomor atau berpoin, anggap SETIAP ITEM DAFTAR sebagai SATU ELEMEN TERPISAH. Nama elemen harus diambil dari inti kalimat item daftar tersebut. Contoh: dari "Membuat produk Konverter USB TLL To Kline", elemennya adalah "Konverter USB TLL To Kline".
 - Jika CP berupa paragraf naratif, identifikasi pengelompokan tematik yang logis sebagai "Elemen".
 
 Referensi Taksonomi Bloom (WAJIB DIGUNAKAN): C1 (Mengingat), C2 (Memahami), C3 (Menerapkan), C4 (Menganalisis), C5 (Mengevaluasi), C6 (Mencipta).
@@ -441,14 +434,14 @@ Struktur JSON yang WAJIB DIIKUTI:
 Array JSON, dimana setiap objek mewakili satu "Elemen".
 Struktur setiap objek "Elemen":
 {
-  "elemen": "Nama elemen yang diekstrak dari CP.",
+  "elemen": "Nama elemen yang diekstrak dari CP (pokok bahasan).",
   "capaian_elemen": "Deskripsi capaian pembelajaran HANYA untuk elemen ini. Contoh: 'membuat produk Konverter USB TLL To Kline'. JANGAN sertakan frasa pembuka seperti 'Pada akhir Fase F...'.",
   "tps": [
     {
-      "tujuan_pembelajaran_inti": "Teks inti dari TP setelah kata kerja. Contoh: 'arsitektur dan organisasi komputer'",
-      "materi": "Materi/konten yang relevan. Contoh: 'Arsitektur Von Neumann, Komponen CPU'",
+      "tujuan_pembelajaran_inti": "Teks inti dari TP setelah kata kerja. Contoh: 'skema rangkaian Konverter USB TLL To Kline berdasarkan datasheet'",
+      "materi": "Materi/konten yang relevan DAN SPESIFIK. Contoh: 'Skema Rangkaian, Fungsi Komponen, Proses Solder'",
       "alokasi_waktu_estimasi": 12,
-      "kompetensi_kata": "Kata kerja operasional dari Taksonomi Bloom. Contoh: 'Menganalisis'",
+      "kompetensi_kata": "Kata kerja operasional dari Taksonomi Bloom. Contoh: 'Menerapkan'",
       "kompetensi_level": "Kode level Taksonomi Bloom (C1-C6). Contoh: 'C4'"
     }
   ]
@@ -532,7 +525,6 @@ Instruksi Penting:
         }
 
         function renderDocuments(rawData) {
-            // FIX: Hapus tanda tangan lama sebelum render yang baru
             document.querySelectorAll('.signature-block').forEach(el => el.remove());
 
             const getVal = id => {
@@ -569,9 +561,6 @@ Instruksi Penting:
             let finalTotalJP = 0;
             const kodeUtama = getVal('kodeUtama');
             
-            // ** LOGIKA BARU SESUAI PERMINTAAN **
-            const cpMode = document.querySelector('input[name="cpMode"]:checked').value;
-
             data.forEach(item => {
                 const tujuanCount = item.tps.length;
                 if(tujuanCount === 0) return;
@@ -584,47 +573,47 @@ Instruksi Penting:
                     const materi = tp.materi || '';
                     finalTotalJP += alokasiWaktu;
 
+                    // Row untuk Tabel Analisis CP
                     const anlRow = analisisTbody.insertRow();
                     anlRow.insertCell().textContent = kode;
                     if (i === 0) {
                         anlRow.insertCell().rowSpan = tujuanCount; anlRow.cells[1].innerHTML = item.elemen;
                         
-                        // Menentukan teks CP berdasarkan mode yang dipilih
-                        let cpTextForColumn;
-                        if (cpMode === 'lengkap') {
-                            cpTextForColumn = capaianPembelajaranLengkap.replace(/\n/g, '<br>');
-                        } else { // cpMode is 'elemen'
-                            const capaianElemen = item.capaian_elemen || item.elemen; // Fallback jika AI tidak memberikan capaian_elemen
-                            cpTextForColumn = `Pada akhir Fase F, murid memiliki kemampuan ${capaianElemen}`;
-                        }
+                        const capaianElemen = item.capaian_elemen || item.elemen; 
+                        const cpTextForColumn = `Pada akhir Fase F, murid memiliki kemampuan ${capaianElemen}`;
                         
                         const cpCell = anlRow.insertCell();
                         cpCell.rowSpan = tujuanCount;
                         cpCell.innerHTML = cpTextForColumn;
                     }
-                    anlRow.insertCell().textContent = tp.kompetensi_kata;
-                    anlRow.insertCell().textContent = materi; 
+                    
+                    // REVISI BARU: Format Kolom Kompetensi sesuai contoh terakhir
+                    const kompetensiText = `${kompetensiKata.toLowerCase()} ${tp.tujuan_pembelajaran_inti} (${tp.kompetensi_level})`;
+                    const kompetensiCell = anlRow.insertCell();
+                    kompetensiCell.textContent = kompetensiText.charAt(0).toUpperCase() + kompetensiText.slice(1);
+                    
+                    // Kolom Konten diambil dari nama Elemen
+                    const kontenCell = anlRow.insertCell();
+                    kontenCell.textContent = item.elemen; 
+                    
+                    // Kolom Rumusan TP
                     anlRow.insertCell().textContent = rumusanTP;
 
+                    // Row untuk Tabel ATP
                     const atpRow = atpTbody.insertRow();
                     atpRow.insertCell().textContent = kode;
                     if (i === 0) {
                         atpRow.insertCell().rowSpan = tujuanCount; atpRow.cells[1].innerHTML = item.elemen;
                         
-                        let cpTextForColumn;
-                         if (cpMode === 'lengkap') {
-                            cpTextForColumn = capaianPembelajaranLengkap.replace(/\n/g, '<br>');
-                        } else { // cpMode is 'elemen'
-                            const capaianElemen = item.capaian_elemen || item.elemen;
-                            cpTextForColumn = `Pada akhir Fase F, murid memiliki kemampuan ${capaianElemen}`;
-                        }
+                        const capaianElemen = item.capaian_elemen || item.elemen;
+                        const cpTextForColumn = `Pada akhir Fase F, murid memiliki kemampuan ${capaianElemen}`;
                         
                         const cpCell = atpRow.insertCell();
                         cpCell.rowSpan = tujuanCount;
                         cpCell.innerHTML = cpTextForColumn;
                     }
                     atpRow.insertCell().textContent = rumusanTP;
-                    atpRow.insertCell().textContent = materi;
+                    atpRow.insertCell().textContent = materi; // Materi tetap detail di ATP
                     const cellAlokasi = atpRow.insertCell();
                     cellAlokasi.textContent = `${alokasiWaktu} JP`;
                     cellAlokasi.style.textAlign = 'center';
