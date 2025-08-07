@@ -587,14 +587,15 @@ Instruksi Penting:
                         cpCell.innerHTML = cpTextForColumn;
                     }
                     
-                    // REVISI BARU: Format Kolom Kompetensi sesuai contoh terakhir
+                    // Format Kolom Kompetensi
                     const kompetensiText = `${kompetensiKata.toLowerCase()} ${tp.tujuan_pembelajaran_inti} (${tp.kompetensi_level})`;
                     const kompetensiCell = anlRow.insertCell();
                     kompetensiCell.textContent = kompetensiText.charAt(0).toUpperCase() + kompetensiText.slice(1);
                     
-                    // Kolom Konten diambil dari nama Elemen
+                    // Kolom Konten diambil dari inti kompetensi (tujuan_pembelajaran_inti)
+                    const kontenInti = tp.tujuan_pembelajaran_inti;
                     const kontenCell = anlRow.insertCell();
-                    kontenCell.textContent = item.elemen; 
+                    kontenCell.textContent = kontenInti;
                     
                     // Kolom Rumusan TP
                     anlRow.insertCell().textContent = rumusanTP;
